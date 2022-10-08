@@ -169,4 +169,3 @@ logs/
 *.tiled-session
 .DS_Store
 resources
-.gitignore
