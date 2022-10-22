@@ -6,12 +6,11 @@ import pygame
 import logging
 import utils.logs as logs
 from graphics.graphicsManager import GraphicsManager
-from levelManager import Layer, Level, LevelManager
+from levelManager import LevelManager
 from graphics.renderManager import RenderManager
-from entityManager import EntityManager
+from entityManager import EntityManager, Entity
 from graphics.screenManager import ScreenManager
 from graphics.uiManager import UIManager
-import graphics.ui.gui as gui
 
 # from states.build import build
 from states.game import game
@@ -27,11 +26,7 @@ rm = RenderManager(em, gm)
 
 level = lm.load("maps/test.yuck")
 
-# level = lm.createNew(em, 10, 10, 5, 'assets/tileset.png')
-# for y in range(10):
-#     for x in range(10):
-#         level.addTile(x, y, 0, 0)
-# lm.activeLevel = level
+level.addEntity(Entity("player", 0, 0, 3, 3))
 # lm.save(level, "maps/test.yuck")
 
 # b = build(gm, um, em, lm, rm)

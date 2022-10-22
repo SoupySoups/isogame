@@ -5,7 +5,6 @@ import pygame
 from entityManager import EntityManager
 import logging
 import utils.logs as logs
-from pygame._sdl2 import video
 
 
 class RenderManager:

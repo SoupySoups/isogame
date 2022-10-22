@@ -94,6 +94,17 @@ class Level:
     def removeTile(self, x, y, z):
         self.getLayer(z).removeTile(x, y)
 
+    def addEntity(self, entity):
+        self.objects.append(entity)
+    
+    def removeEntity(self, entity):
+        self.objects.remove(entity)
+
+    def getEntityById(self, id):
+        for entity in self.objects:
+            if entity.id == id:
+                return entity
+    
 class Layer:
     def __init__(self, id, width, height, z, tiles=None) -> None:
         self.id = id

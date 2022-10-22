@@ -36,6 +36,9 @@ class Entity:
         self.z = z
         self.gid = gid
 
+    def asSurface(self, level):
+        return level.get_gid(self.gid)
+
 
 class Player(Entity):
     def __init__(self) -> None:
