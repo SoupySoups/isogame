@@ -3,6 +3,7 @@ from typing import Tuple
 import utils.logs as logs
 import pygame
 from graphics.modernGLwindow import window
+from pygame._sdl2 import video
 
 
 class GraphicsManager(window):
@@ -18,8 +19,8 @@ class GraphicsManager(window):
             size (Tuple[int, int]): The size of the window.
             windowName (str, optional): The name of the window. Defaults to "Soup Engine".
         """
-        super().__init__((1280, 720), windowName, size)
 
+        super().__init__((1280, 720), windowName, size)
         self._showFps = False
 
         logging.debug(
@@ -46,7 +47,6 @@ class GraphicsManager(window):
 
     def run(self, showFps: bool = False) -> None:
         """Main loop.
-
         Yields:
             int: Delta time.
             List[pygame.event.Event]: List of events.
@@ -81,7 +81,6 @@ class GraphicsManager(window):
             self.screen.fill((0, 0, 0))
 
         pygame.quit()
-        return
 
     def showFps(self) -> None:
         """Shows the fps.

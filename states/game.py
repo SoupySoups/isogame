@@ -1,21 +1,23 @@
 import pygame
+from states.state import state
+import graphics.ui.gui as gui
 
-def game(inputs, screen=None):
-    events = inputs['events']
-    gm = inputs['graphicsManager']
-    um = inputs['uiManager']
-    em = inputs['entityManager']
-    lm = inputs['levelManager']
-    rm = inputs['renderManager']
+class game(state):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    data = inputs['lastData'] if 'lastData' in inputs else {}
+        self.crtShader = None
+    
+    def onStart(self):
+        self.crtShader = self.gm.loadShader(frag="graphics/shaders/crt.frag.glsl")
 
-    screen.fill((0, 0, 0))
-    for e in events:
-        if e.type == pygame.MOUSEBUTTONDOWN:
+    def onUpdate(self, events):
+        self.gm.screen.fill((0, 0, 0))
+        for e in events:
             pass
+        
 
-    em.animate()
-    rm.render(lm.activeLevel, screen, -1, False)
+        self.em.animate()
+        self.rm.render(self.lm.activeLevel, self.gm.screen)
 
-    return data
+        self.um.draw(self.gm.screen, events)

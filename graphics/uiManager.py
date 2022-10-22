@@ -102,6 +102,9 @@ class UIManager:
     def toggleDebugDraw(self):
         self.debug_draw = not self.debug_draw
 
+    def clear(self):
+        self.containers = []
+        self.active_container = None
 
 CENTERED = 0.5
 CENTER = 0.5

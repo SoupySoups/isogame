@@ -3,6 +3,7 @@ import logging
 import pygame
 from entityManager import Entity
 import pickle
+from pygame._sdl2 import video
 
 
 @logs.logBeforeAndAfter(
@@ -20,22 +21,35 @@ class LevelManager:
         """Initializes the level manager."""
         self.em = entityManager
         self.activeLevel = None
-
+        self.idsInUse = [-1]
+        
     def save(self, level, filename: str):
         with open(filename, "wb") as f:
-            pickle.dump({'name': level.name, 'width': level.width, 'height': level.height, 'layers': level.layers, 'tileset_path': level.tileset_path, 'objects': level.objects}, f)
+            pickle.dump({'width': level.width, 'height': level.height, 'layers': level.layers, 'tileset_path': level.tileset_path, 'objects': level.objects}, f)
             return filename
 
     def load(self, filename: str):
         with open(filename, "rb") as f:
             res = pickle.load(f)
-            self.activeLevel = Level(res['name'], res['width'], res['height'], self.em, res['tileset_path'], res['layers'], res['objects'])
-            return self.activeLevel
+            self.activeLevel = Level(res['width'], res['height'], self.em, res['tileset_path'], res['layers'], res['objects'])
+        self.idsInUse = [l.id for l in self.activeLevel.layers]
+        return self.activeLevel
+
+    def generateUUID(self):
+        newId = max(self.idsInUse) + 1
+        self.idsInUse.append(newId)
+        return newId
+
+    @property
+    def size(self):
+        return self.activeLevel.width, self.activeLevel.height
+
+    def createNew(self, em, width, height, maxZ, tileset_path):
+        self.activeLevel = Level(width, height, em, tileset_path, [Layer(self.generateUUID(), width, height, z) for z in range(maxZ)])
+        return self.activeLevel
 
 class Level:
-    def __init__(self, name, width, height, entityManager, tileset_path, layers=None, objects=None) -> None:
-        self.name = name
-
+    def __init__(self, width, height, entityManager, tileset_path, layers=None, objects=None) -> None:
         self.tileset_path = tileset_path
 
         if layers is None:
@@ -81,10 +95,13 @@ class Level:
         self.getLayer(z).removeTile(x, y)
 
 class Layer:
-    def __init__(self, width, height, z, tiles=None) -> None:
+    def __init__(self, id, width, height, z, tiles=None) -> None:
+        self.id = id
         self.z = z
         self.height = height
         self.width = width
+
+        self.modified = False
 
         if tiles is None:
             self.tiles = []
@@ -98,6 +115,7 @@ class Layer:
                 return True
             
         self.tiles.append(Tile(x, y, self.z, gid))
+        self.modified = True
 
     def getTile(self, x, y):
         for tile in self.tiles:
@@ -110,13 +128,16 @@ class Layer:
             if tile.x == x and tile.y == y:
                 assert self.z == tile.z
                 self.tiles.remove(tile)
+                self.modified = True
                 return True
         return False
 
 class Tile:
-    def __init__(self, x, y, z, gid, solid=False) -> None:
+    def __init__(self, x, y, z, gid) -> None:
         self.x = x
         self.y = y
         self.z = z
         self.gid = gid
-        self.solid = solid
+
+    def asSurface(self, level):
+        return level.get_gid(self.gid)

@@ -15,10 +15,11 @@ class ScreenManager:
         after="Screen manager successfully set up.",
         level=logging.DEBUG,
     )
-    def __init__(self):
+    def __init__(self, um: UIManager):
         self._screens = []
         self._screens_index = 0
         self._first = True
+        self.um = um
 
     def addScreen(
         self,
@@ -51,7 +52,9 @@ class ScreenManager:
             if screen["id"] == id:
                 self._screens_index = i
                 self._screens[self._screens_index]["callback"].onStart()
-                self._first = False
+                self._first = True
+                self.um.clear()
+                return True
         raise KeyError("Screen with id '{}' not found".format(id))
 
     def removeScreenById(self, id: str):
@@ -73,8 +76,8 @@ class ScreenManager:
         if self._first:
             self._screens[self._screens_index]["callback"].onStart()
             self._first = False
-        else:
-            self._screens[self._screens_index]["callback"].onUpdate(events)
+        
+        self._screens[self._screens_index]["callback"].onUpdate(events)
 
     @property
     def currentScreenId(self) -> str:

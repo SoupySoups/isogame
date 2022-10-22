@@ -5,6 +5,7 @@ import pygame
 from entityManager import EntityManager
 import logging
 import utils.logs as logs
+from pygame._sdl2 import video
 
 
 class RenderManager:
@@ -19,28 +20,54 @@ class RenderManager:
         self.em = em
         self.gm = gm
 
-    def render(self, level: Level, screen: pygame.Surface, active_layer: int = -1, plane=False, extras=None) -> None:
-        if extras is None:
-            extras = []
+        self.cachedLayers = {}
+
+    def render(self, level: Level, screen: pygame.Surface, active_layer: int = -1, plane=False) -> None:
+        l = []
+
+        unused = list(self.cachedLayers.keys())
+        tempZ = 0
+        for z, layer in enumerate(self.sort(level, extras=list(self.em.getOnLayer(tempZ+1)))):
+            tempZ = z
+            lid = level.getLayer(z).id
+            lmf = level.getLayer(z).modified
+            if lid in unused and not lmf:
+                l.append(self.cachedLayers[lid])
+                unused.remove(lid)
+            else:
+                layerSurf = self.gm.identical
+                for element in layer:
+                    point = self.addCameraOffset(
+                            self.worldToScreen((element.x, element.y, element.z))
+                        )
+                    if screen.get_rect().inflate(20, 20).collidepoint(point):
+                        if element.z > active_layer:
+                            layerSurf.blit(element.asSurface(level), point)
+                        else:
+                            layerSurf.blit(element.asSurface(level), point)
+
+                self.cachedLayers[lid] = layerSurf
+                l.append(layerSurf)
+
+        # Remove cached layers that are no longer used
+        for key in unused:
+            del self.cachedLayers[key]
 
         top = self.gm.identical
-        for layer in self.sort(level, extras=extras):
-            for element in layer:
-                point = self.addCameraOffset(
-                        self.worldToScreen((element.x, element.y, element.z))
-                    )
-                if screen.get_rect().inflate(20, 20).collidepoint(point):
-                    if element.z > active_layer and active_layer != -1:
-                        top.blit(level.get_gid(element.gid), point)
-                    else:
-                        screen.blit(level.get_gid(element.gid), point)
+        for z, layer in enumerate(l):
+            if z > active_layer and active_layer != -1:
+                top.blit(layer, (0, 0))
+            else:
+                self.gm.screen.blit(layer, (0, 0))
+
+        top.set_alpha(70)
+        self.gm.screen.blit(top, (0, 0))
 
         if plane:
-            plane = self.drawPlane(self.gm.identical, pygame.Rect(2, 1, level.getLayer(active_layer).width, level.getLayer(active_layer).height), active_layer-0.5)
+            al = level.getLayer(active_layer)
+            plane = self.drawPlane(self.gm.identical, pygame.Rect(2, 1, al.width, al.height), active_layer-0.5)
             plane.set_alpha(128)
-            screen.blit(plane, (0, 0))
-        top.set_alpha(70)
-        screen.blit(top, (0, 0))
+            self.gm.screen.blit(plane, (0, 0))
 
     def sort(self, level: Level, extras=None):
         """Mixes static and dynamic tiles together and sorts them by their index score.

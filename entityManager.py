@@ -2,6 +2,7 @@ import pygame
 from typing import List
 import logging
 import utils.logs as logs
+import math
 import time
 
 
@@ -17,17 +18,23 @@ class EntityManager:
     def addEntity(self, entity) -> None:
         self.entities.append(entity)
 
+    def getOnLayer(self, layer: int) -> List:
+        for e in self.entities:
+            if math.floor(e.z) == layer:
+                yield e
+
     def animate(self) -> None:
         for entity in self.entities:
             pass
 
 
 class Entity:
-    def __init__(self, x: int, y: int, z: int, image) -> None:
+    def __init__(self, id, x: int, y: int, z: int, gid) -> None:
+        self.id = id
         self.x = x
         self.y = y
         self.z = z
-        self.image = image
+        self.gid = gid
 
 
 class Player(Entity):
