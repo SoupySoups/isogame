@@ -67,12 +67,12 @@ class GraphicsManager(window):
 
             if self._showFps:
                 msg = f"Fps: {int(self._clock.get_fps())}"
-                fpsText = self.font.render(
-                    msg, False, (255, 255, 255), (0, 0, 0)
-                )
+                fpsText = self.font.render(msg, False, (255, 255, 255), (0, 0, 0))
                 text_inv = fpsText.convert()
                 pos = (0, 0)
-                text_inv.blit(self.screen, (-pos[0], -pos[1]), special_flags=pygame.BLEND_RGB_SUB)
+                text_inv.blit(
+                    self.screen, (-pos[0], -pos[1]), special_flags=pygame.BLEND_RGB_SUB
+                )
                 self.screen.blit(fpsText, pos, special_flags=pygame.BLEND_RGB_SUB)
                 self.screen.blit(text_inv, pos, special_flags=pygame.BLEND_RGB_ADD)
 
@@ -83,18 +83,15 @@ class GraphicsManager(window):
         pygame.quit()
 
     def showFps(self) -> None:
-        """Shows the fps.
-        """
+        """Shows the fps."""
         self._showFps = True
 
     def hideFps(self) -> None:
-        """Hides the fps.
-        """
+        """Hides the fps."""
         self._showFps = False
 
     def toggleFps(self) -> None:
-        """Toggles the fps.
-        """
+        """Toggles the fps."""
         self._showFps = not self._showFps
 
     @property

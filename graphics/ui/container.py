@@ -34,7 +34,15 @@ class Container:
         self.children.remove(child)
 
     def draw(
-        self, screen: pygame.Surface, events, prect, x, y, is_active, gm, debug_draw=False
+        self,
+        screen: pygame.Surface,
+        events,
+        prect,
+        x,
+        y,
+        is_active,
+        gm,
+        debug_draw=False,
     ):
         """Draws the container and all of its children to the given screen.
 

@@ -72,12 +72,12 @@ class ScreenManager:
                 return True
         raise KeyError("Screen with id '{}' not found".format(id))
 
-    def run(self, events) -> Any:
+    def run(self, events, dt) -> Any:
         if self._first:
             self._screens[self._screens_index]["callback"].onStart()
             self._first = False
-        
-        self._screens[self._screens_index]["callback"].onUpdate(events)
+
+        self._screens[self._screens_index]["callback"].onUpdate(events, dt)
 
     @property
     def currentScreenId(self) -> str:

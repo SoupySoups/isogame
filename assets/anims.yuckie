@@ -1,0 +1,8 @@
+# Yuck Interactive Extension V1.1
+# (animation_name(base_gid(all_other_gids_in_order(length_of_anim
+# Index starts at 0!
+# Length is in secconds!
+(idle_front(21(22(1
+(idle_right(23(24(1
+(idle_left(25(26(1
+(idle_back(27(28(1

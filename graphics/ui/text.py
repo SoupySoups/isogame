@@ -13,7 +13,7 @@ class Text(Container):
         color: Tuple[int, int, int],
         bgColor: Tuple[int, int, int] = None,
         horizAlign: float = CENTER,
-        vertAlign: float = CENTER
+        vertAlign: float = CENTER,
     ):
         super().__init__(0, 0, 1, 1)
         self.text = text

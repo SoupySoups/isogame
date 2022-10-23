@@ -3,7 +3,14 @@ from graphics.ui.container import Container
 
 
 class Button(Container):
-    def __init__(self, *args, leftClickCallback=None, rightClickCallback=None, hoverCallback=None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        leftClickCallback=None,
+        rightClickCallback=None,
+        hoverCallback=None,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.hoverCallback = hoverCallback
         self.leftClickCallback = leftClickCallback

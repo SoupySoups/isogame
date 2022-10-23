@@ -80,7 +80,7 @@ class window(WindowConfig):
                 with open(frag) as f:
                     frag = f.read()
             else:
-                frag = '''
+                frag = """
 #version 330
 // Vertex Shader
 
@@ -91,12 +91,12 @@ in vec2 uv0;
 void main() {
     fragColor = texture(texture0, uv0);
 }
-'''
+"""
             if vert is not None:
                 with open(vert) as f:
                     vert = f.read()
             else:
-                vert = '''
+                vert = """
 #version 330
 // Vertex Shader
 
@@ -108,7 +108,7 @@ void main() {
     gl_Position = vec4(in_position, 1);
     uv0 = in_texcoord_0;
 }
-'''
+"""
         self.programs.append(self.ctx.program(vertex_shader=vert, fragment_shader=frag))
         return self.programs[-1]
 

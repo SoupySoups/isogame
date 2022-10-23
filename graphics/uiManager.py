@@ -43,7 +43,11 @@ class UIManager:
 
         for container in self.containers:
             rect = container.genRect(
-                container.x, container.y, container.width, container.height, screen.get_size()
+                container.x,
+                container.y,
+                container.width,
+                container.height,
+                screen.get_size(),
             )
 
             mcolid = rect.collidepoint(self.gm.windowToScreen(pygame.mouse.get_pos()))
@@ -105,6 +109,7 @@ class UIManager:
     def clear(self):
         self.containers = []
         self.active_container = None
+
 
 CENTERED = 0.5
 CENTER = 0.5

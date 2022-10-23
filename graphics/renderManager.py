@@ -1,5 +1,6 @@
 from typing import Tuple
 from graphics.graphicsManager import GraphicsManager
+from graphics.animationManager import AnimationManager
 from levelManager import Level
 import pygame
 from entityManager import EntityManager
@@ -13,37 +14,44 @@ class RenderManager:
         after="Render manager successfully set up.",
         level=logging.DEBUG,
     )
-    def __init__(self, em: EntityManager, gm: GraphicsManager) -> None:
+    def __init__(
+        self, em: EntityManager, gm: GraphicsManager, am: AnimationManager
+    ) -> None:
         self.camera = (10, 0)
 
         self.em = em
         self.gm = gm
+        self.am = am
 
         self.cachedLayers = {}
 
-    def render(self, level: Level, screen: pygame.Surface, active_layer: int = -1, plane=False) -> None:
+    def render(
+        self, level: Level, screen: pygame.Surface, active_layer: int = -1, plane=False
+    ) -> None:
         l = []
 
         unused = list(self.cachedLayers.keys())
         tempZ = 0
-        for z, layer in enumerate(self.sort(level, extras=list(self.em.getOnLayer(tempZ+1)))):
+        for z, layer in enumerate(
+            self.sort(level, extras=list(self.em.getOnLayer(tempZ + 1)))
+        ):
             tempZ = z
             lid = level.getLayer(z).id
             lmf = level.getLayer(z).modified
-            if lid in unused and not lmf:
+            if lid in unused and not lmf and z not in self.am.changedLayers:
                 l.append(self.cachedLayers[lid])
                 unused.remove(lid)
             else:
                 layerSurf = self.gm.identical
                 for element in layer:
                     point = self.addCameraOffset(
-                            self.worldToScreen((element.x, element.y, element.z))
-                        )
+                        self.worldToScreen((element.x, element.y, element.z))
+                    )
                     if screen.get_rect().inflate(20, 20).collidepoint(point):
                         if element.z > active_layer:
-                            layerSurf.blit(element.asSurface(level), point)
+                            layerSurf.blit(element.asSurface(level, self.am), point)
                         else:
-                            layerSurf.blit(element.asSurface(level), point)
+                            layerSurf.blit(element.asSurface(level, self.am), point)
 
                 self.cachedLayers[lid] = layerSurf
                 l.append(layerSurf)
@@ -64,7 +72,11 @@ class RenderManager:
 
         if plane:
             al = level.getLayer(active_layer)
-            plane = self.drawPlane(self.gm.identical, pygame.Rect(2, 1, al.width, al.height), active_layer-0.5)
+            plane = self.drawPlane(
+                self.gm.identical,
+                pygame.Rect(2, 1, al.width, al.height),
+                active_layer - 0.5,
+            )
             plane.set_alpha(128)
             self.gm.screen.blit(plane, (0, 0))
 
@@ -80,7 +92,7 @@ class RenderManager:
         if extras is None:
             extras = []
 
-        to_sort = level.objects
+        to_sort = self.em.entities.copy()
         for z, layer in enumerate(level.layers):
             elements = layer.tiles
             for object in to_sort:
@@ -89,7 +101,8 @@ class RenderManager:
                     to_sort.remove(object)
 
             yield sorted(
-                elements + extras, key=lambda x: self.calculateIndexScore((x.x, x.y, x.z))
+                elements + extras,
+                key=lambda x: self.calculateIndexScore((x.x, x.y, x.z)),
             )
 
     def calculateIndexScore(self, worldPos: Tuple[int, int, int]) -> int:
@@ -125,7 +138,7 @@ class RenderManager:
             Tuple[int, int, int]: The calculated world position.
         """
         deZefied_screen_y = (screenPos[1] + world_z * 8) / 3
-        x6 = screenPos[0]/6
+        x6 = screenPos[0] / 6
         world_x = (x6 + deZefied_screen_y) / 2
         world_y = (deZefied_screen_y - x6) / 2
 
@@ -170,10 +183,14 @@ class RenderManager:
             self.worldToScreen((bounds[0] - 1, bounds[1] - 2, bounds[2] - 1))
         )  # Top-Back-Left
         tfl = self.addCameraOffset(
-            self.worldToScreen((bounds[0] - 1 + bounds[3], bounds[1] - 2, bounds[2] - 1))
+            self.worldToScreen(
+                (bounds[0] - 1 + bounds[3], bounds[1] - 2, bounds[2] - 1)
+            )
         )  # Top-Front-Left
         tbr = self.addCameraOffset(
-            self.worldToScreen((bounds[0] - 1, bounds[1] - 2 + bounds[4], bounds[2] - 1))
+            self.worldToScreen(
+                (bounds[0] - 1, bounds[1] - 2 + bounds[4], bounds[2] - 1)
+            )
         )  # Top-Back-Right
         tfr = self.addCameraOffset(
             self.worldToScreen(
@@ -181,10 +198,10 @@ class RenderManager:
             )
         )  # Top-Front-Right
 
-        tbl = (tbl[0], tbl[1]+1)
-        tfl = (tfl[0], tfl[1]+1)
-        tbr = (tbr[0], tbr[1]+1)
-        tfr = (tfr[0], tfr[1]+1)
+        tbl = (tbl[0], tbl[1] + 1)
+        tfl = (tfl[0], tfl[1] + 1)
+        tbr = (tbr[0], tbr[1] + 1)
+        tfr = (tfr[0], tfr[1] + 1)
 
         bbl = (tbl[0], tbl[1] + (8 * bounds[5]))  # Bottom-Back-Left
         bfl = (tfl[0], tfl[1] + (8 * bounds[5]))  # Bottom-Front-Left
@@ -217,20 +234,30 @@ class RenderManager:
         """
 
         for y in range(plane.height + 1):
-            pygame.draw.line(screen,
+            pygame.draw.line(
+                screen,
                 (255, 255, 255, 100),
-                self.addCameraOffset(self.worldToScreen((plane.x, y + plane.y, z + 0.5))),
-                self.addCameraOffset(self.worldToScreen((plane.x + plane.width, y + plane.y, z + 0.5)))
+                self.addCameraOffset(
+                    self.worldToScreen((plane.x, y + plane.y, z + 0.5))
+                ),
+                self.addCameraOffset(
+                    self.worldToScreen((plane.x + plane.width, y + plane.y, z + 0.5))
+                ),
             )
         for x in range(plane.width + 1):
-            pygame.draw.line(screen,
+            pygame.draw.line(
+                screen,
                 (255, 255, 255, 100),
-                self.addCameraOffset(self.worldToScreen((x + plane.x, plane.y, z + 0.5))),
-                self.addCameraOffset(self.worldToScreen((x + plane.x, plane.height + plane.y, z + 0.5)))
+                self.addCameraOffset(
+                    self.worldToScreen((x + plane.x, plane.y, z + 0.5))
+                ),
+                self.addCameraOffset(
+                    self.worldToScreen((x + plane.x, plane.height + plane.y, z + 0.5))
+                ),
             )
 
         return screen
-        
+
     def snapPointToGrid(self, point: Tuple[int, int, int]) -> Tuple[int, int, int]:
         """Snaps a point to the grid.
 
@@ -251,7 +278,4 @@ class RenderManager:
         Returns:
             Tuple[int, int, int]: The limited point.
         """
-        return (
-            max(0, min(point[0], width - 1)),
-            max(0, min(point[1], height - 1))
-        )
+        return (max(0, min(point[0], width - 1)), max(0, min(point[1], height - 1)))
