@@ -50,13 +50,15 @@ def main():
             #     b.toggleDebugDraw()
 
             # if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
-            #     sm.setScreenById(active)
-            #     if active == 'build':
-            #         active = 'game'
-            #     elif active == 'game':
-            #         active = 'build'
+                # sm.setScreenById(active)
+                # if active == 'build':
+                #     active = 'game'
+                # elif active == 'game':
+                #     active = 'build'
 
         sm.run(events, dt)
+
+
 
 
 if __name__ == "__main__":

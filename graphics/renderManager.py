@@ -92,16 +92,14 @@ class RenderManager:
         if extras is None:
             extras = []
 
-        to_sort = self.em.entities.copy()
         for z, layer in enumerate(level.layers):
-            elements = layer.tiles
-            for object in to_sort:
+            verifiedObjects = []
+            for object in self.em.entities:
                 if object.z >= z and object.z < z + 1:
-                    elements.append(object)
-                    to_sort.remove(object)
+                    verifiedObjects.append(object)
 
             yield sorted(
-                elements + extras,
+                layer.tiles + verifiedObjects + extras,
                 key=lambda x: self.calculateIndexScore((x.x, x.y, x.z)),
             )
 
